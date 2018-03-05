@@ -1,0 +1,13 @@
+{
+    "name": "alagunto/ez-schedules",
+    "description": "This one allows you to manage any kind of schedules ez-ly in Laravel 5.5+",
+    "type": "lirbrary",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alagunto",
+            "email": "priah@mail.ru"
+        }
+    ],
+    "require": {}
+}
