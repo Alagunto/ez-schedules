@@ -17,6 +17,7 @@ class CreateScheduleItemsTable extends Migration
             $table->increments('id');
             $table->dateTime("starts_at");
             $table->dateTime("ends_at");
+            $table->integer("repetition_id");
             $table->timestamps();
         });
     }

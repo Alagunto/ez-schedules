@@ -24,6 +24,7 @@ class ScheduleCreatorQueryBuilder
     protected $put_closure;
     protected $put_params;
     protected $priority = 0;
+    protected $whens = [];
 
     public function __construct($model_class) {
         $this->model_class = $model_class;
@@ -32,7 +33,8 @@ class ScheduleCreatorQueryBuilder
     }
 
     public function each($what) {
-        $this->rule = new EacherRepetitionStrategy($this->model_class, $what);
+        $this->rule = new EacherRepetitionStrategy();
+        $this->rule->setEach($what);
 
         return $this;
     }
@@ -52,15 +54,13 @@ class ScheduleCreatorQueryBuilder
     }
     
     public function if(Callable $closure) {
-        $this->failWithoutRule()->rule->addLimitation(
-            $this->serializer->serialize($closure)
-    );
+        $this->whens[] = $this->serializer->serialize($closure);
 
         return $this;
     }
 
     public function andIf(Callable $closure) {
-        $this->failWithoutRule()->if($closure);
+        $this->if($closure);
 
         return $this;
     }
@@ -97,6 +97,7 @@ class ScheduleCreatorQueryBuilder
         $storage->item_model = $this->model_class;
         $storage->put_params = $this->put_params;
         $storage->priority = $this->priority;
+        $storage->params->core->whens = $this->whens;
 
         if($this->put_closure) {
            $storage->put_closure = $this->serializer->serialize($this->put_closure);

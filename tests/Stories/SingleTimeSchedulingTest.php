@@ -15,8 +15,6 @@ class SingleTimeSchedulingTest extends TestCase
             "user_id" => 13
         ])->save();
 
-        dump(RepetitionStrategiesStorage::all()->toArray());
-
-        dump(ScheduleItem::from(Carbon::now())->to(Carbon::tomorrow())->get());
+        dump(ScheduleItem::from(Carbon::now())->to(Carbon::tomorrow())->get()->toArray());
     }
 }

@@ -14,22 +14,23 @@ use Illuminate\Database\Eloquent\Model;
 
 abstract class RepetitionStrategy
 {
-    protected $limitations = [];
+    protected $schedule_items_model;
+
     protected $starts_at = null;
     protected $ends_at = null;
+
+    public function __construct() {
+        $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));
+    }
+
+    public function setItemsModel($model) {
+        $this->schedule_items_model = $model;
+    }
 
     /**
      * Generates & provides ScheduleItems for a given time range based on this strategy
      */
-    public abstract function provideFor($classname, Carbon $from, Carbon $to);
-
-    public function addLimitation(Callable $closure) {
-        $this->limitations[] = $closure;
-    }
-
-    public function setLimitations(array $limitations)  {
-        $this->limitations = $limitations;
-    }
+    public abstract function provide(Carbon $from, Carbon $to);
 
     public function setStartsAt(Carbon $from) {
         $this->starts_at = $from;
@@ -42,7 +43,11 @@ abstract class RepetitionStrategy
     public function save(RepetitionStrategiesStorage $storage) {
         $storage->starts_at = $this->starts_at;
         $storage->ends_at = $this->ends_at;
+    }
 
-        $storage->params->core->limitations = $this->limitations;
+    public function restoreFromStorage(RepetitionStrategiesStorage $storage) {
+        $this->starts_at = $storage->starts_at;
+        $this->ends_at = $storage->ends_at;
+        $this->schedule_items_model = $storage->item_model;
     }
 }

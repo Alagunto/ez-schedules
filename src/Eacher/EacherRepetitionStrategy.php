@@ -16,11 +16,12 @@ class EacherRepetitionStrategy extends RepetitionStrategy
 {
     protected $each_what;
 
-    public function __construct($class, $each_what) {
+    public function setEach($each_what) {
         $this->each_what = $each_what;
     }
 
-    public function provideFor($classname, Carbon $from, Carbon $to) {
+    public function provide(Carbon $from, Carbon $to) {
+        dump($this->schedule_items_model);
     }
 
     public function save(RepetitionStrategiesStorage $storage) {
