@@ -11,7 +11,7 @@ namespace Alagunto\EzSchedules\Builder;
 use Alagunto\EzSchedules\SchedulesManager;
 use Alagunto\EzSchedules\Test\ScheduleItem;
 
-class ScheduleItemQueryBuilder extends \Illuminate\Database\Eloquent\Builder
+class ScheduleReaderQueryBuilder extends \Illuminate\Database\Eloquent\Builder
 {
     protected $from = null;
     protected $to = null;
@@ -28,10 +28,16 @@ class ScheduleItemQueryBuilder extends \Illuminate\Database\Eloquent\Builder
         return $this;
     }
 
+    /**
+     * @param array $columns
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     * @throws \Exception
+     */
     public function get($columns = ['*']) {
         $this->resolveItems();
         return parent::get($columns);
     }
+
 
     /**
      * @throws \Exception

@@ -2,7 +2,8 @@
 
 namespace Alagunto\EzSchedules;
 
-use Alagunto\EzSchedules\Builder\ScheduleItemQueryBuilder;
+use Alagunto\EzSchedules\Builder\ScheduleReaderQueryBuilder;
+use Alagunto\EzSchedules\Builder\ScheduleCreatorQueryBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,11 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 trait IsAScheduleItem
 {
     public static function schedule() {
-
+        return new ScheduleCreatorQueryBuilder(self::class);
     }
 
     public function newEloquentBuilder($query)
     {
-        return new ScheduleItemQueryBuilder($query);
+        return new ScheduleReaderQueryBuilder($query);
     }
 }
