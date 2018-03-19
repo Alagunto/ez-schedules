@@ -39,8 +39,15 @@ class SchedulesManager
         foreach($storages as $storage) {
             /** @var RepetitionStrategy $repetition_strategy */
             $repeater = new RepeatedItemsGenerator($storage);
-            $resulting_items[] = $repeater->generate($from, $to);
+            $generated_items = $repeater->generate($from, $to);
+
+            /** @var Model $item */
+            foreach($generated_items as $item) {
+                $item->repetition_id = $storage->id;
+                $item->save();
+            }
         }
+
 
         return $resulting_items;
     }

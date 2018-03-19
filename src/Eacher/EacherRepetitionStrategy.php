@@ -20,8 +20,17 @@ class EacherRepetitionStrategy extends RepetitionStrategy
         $this->each_what = $each_what;
     }
 
-    public function provide(Carbon $from, Carbon $to) {
-        dump($this->schedule_items_model);
+    /**
+     * @param Carbon $from
+     * @param Carbon $to
+     * @return array
+     * @throws \Exception
+     */
+    public function provide($from, $to) {
+        if(WeekdaysEacher::suitable($this->each_what))
+            return (new WeekdaysEacher($this->each_what, $this->schedule_items_model))->provide($from, $to);
+
+        throw new \Exception("No suitable eacher was found for your values");
     }
 
     public function save(RepetitionStrategiesStorage $storage) {

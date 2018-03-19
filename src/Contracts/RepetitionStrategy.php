@@ -29,8 +29,10 @@ abstract class RepetitionStrategy
 
     /**
      * Generates & provides ScheduleItems for a given time range based on this strategy
+     * @var Carbon $from
+     * @var Carbon $to
      */
-    public abstract function provide(Carbon $from, Carbon $to);
+    public abstract function provide($from, $to);
 
     public function setStartsAt(Carbon $from) {
         $this->starts_at = $from;

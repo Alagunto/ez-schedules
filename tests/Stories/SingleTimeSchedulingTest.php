@@ -11,10 +11,12 @@ use Carbon\Carbon;
 class SingleTimeSchedulingTest extends TestCase
 {
     public function test_i_can_schedule_some_class_for_one_time() {
-        ScheduleItem::schedule()->each("Monday")->put([
-            "user_id" => 13
-        ])->save();
+        ScheduleItem::schedule()->each("Monday")->put(function() {
+            return [
+                "user_id" => 13
+            ];
+        });
 
-        dump(ScheduleItem::from(Carbon::now())->to(Carbon::tomorrow())->get()->toArray());
+        dump(ScheduleItem::from(Carbon::now())->to(Carbon::now()->addMonth())->get()->toArray());
     }
 }

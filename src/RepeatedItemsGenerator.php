@@ -3,6 +3,8 @@
 namespace Alagunto\EzSchedules;
 use Alagunto\EzSchedules\Contracts\RepetitionStrategy;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
+use ReflectionFunction;
 
 /**
  * Class RepeatedItemsGenerator
@@ -12,8 +14,12 @@ use Carbon\Carbon;
  */
 class RepeatedItemsGenerator
 {
+    protected $storage;
+    protected $serializer;
+
     public function __construct(RepetitionStrategiesStorage $storage) {
         $this->storage = $storage;
+        $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));
     }
 
     public function generate(Carbon $from, Carbon $to) {
@@ -24,7 +30,50 @@ class RepeatedItemsGenerator
         // Feed the strategy the container
         $strategy->restoreFromStorage($this->storage);
 
-        $generated_items = $strategy->provide($from, $to);
+        $generated_items = collect($strategy->provide($from, $to));
+
+        // Filter each generated item with whens
+        foreach($this->storage->params->core["whens"] ?? [] as $when) {
+            $closure = $this->serializer->unserialize($when);
+
+            $generated_items->filter(function($model) use ($closure, $from, $to) {
+                $reflection = new ReflectionFunction($closure);
+                $arguments  = $reflection->getParameters();
+                $arguments_count = count($arguments);
+
+                if($arguments_count == 0)
+                    return $closure();
+                elseif($arguments_count == 1)
+                    return $closure($model);
+                elseif($arguments_count == 2)
+                    return $closure($model, $this->storage);
+                elseif($arguments_count == 3)
+                    return $closure($model, $this->storage, $from);
+                elseif($arguments_count == 4)
+                    return $closure($model, $this->storage, $from, $to);
+                else
+                    throw new \Exception("Too much arguments for the closure");
+            });
+        }
+
+        // For each generated item apply storage params
+        if(!empty($this->storage->put_params))
+            $generated_items = $generated_items
+                ->map(function(Model $item) {
+                    return $item->fill($this->storage->put_params);
+                });
+
+
+        if(!empty($this->storage->put_closure)) {
+            $closure = $this->serializer->unserialize($this->storage->put_closure);
+
+            $generated_items = $generated_items->map(function($value) use ($closure) {
+                /** @var Model $value */
+                // TODO: feed closure more info
+                $put = $closure($value);
+                $value->fill($put);
+            });
+        }
 
         return $generated_items;
     }

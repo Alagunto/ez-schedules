@@ -29,7 +29,6 @@ class ScheduleCreatorQueryBuilder
     public function __construct($model_class) {
         $this->model_class = $model_class;
         $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));
-
     }
 
     public function each($what) {
