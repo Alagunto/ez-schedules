@@ -14,4 +14,6 @@ use Illuminate\Database\Eloquent\Model;
 class ScheduleItem extends Model
 {
     use IsAScheduleItem;
+
+    protected $fillable = ["user_id"];
 }

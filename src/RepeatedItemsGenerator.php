@@ -71,7 +71,7 @@ class RepeatedItemsGenerator
                 /** @var Model $value */
                 // TODO: feed closure more info
                 $put = $closure($value);
-                $value->fill($put);
+                return $value->fill($put);
             });
         }
 

@@ -28,13 +28,18 @@ class EacherRepetitionStrategy extends RepetitionStrategy
      */
     public function provide($from, $to) {
         if(WeekdaysEacher::suitable($this->each_what))
-            return (new WeekdaysEacher($this->each_what, $this->schedule_items_model))->provide($from, $to);
+            return (new WeekdaysEacher($this->each_what, $this->schedule_items_model, $this->time))->provide($from, $to);
 
         throw new \Exception("No suitable eacher was found for your values");
     }
 
     public function save(RepetitionStrategiesStorage $storage) {
-        parent::save($storage);
         $storage->params->public->each_what = $this->each_what;
+        parent::save($storage);
+    }
+
+    public function restoreFromStorage(RepetitionStrategiesStorage $storage) {
+        $this->each_what = $storage->params->public["each_what"] ?? null;
+        parent::restoreFromStorage($storage);
     }
 }

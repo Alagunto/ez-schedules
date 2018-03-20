@@ -13,7 +13,9 @@ use Alagunto\EzSchedules\Eacher\EacherRepetitionStrategy;
 use Alagunto\EzSchedules\RepetitionStrategiesStorage;
 use Alagunto\EzSchedules\SchedulesManager;
 use Alagunto\EzSchedules\Test\ScheduleItem;
-use Mockery\Exception;
+use Carbon\Carbon;
+use \Exception;
+use Illuminate\Database\Eloquent\Model;
 
 class ScheduleCreatorQueryBuilder
 {
@@ -25,10 +27,24 @@ class ScheduleCreatorQueryBuilder
     protected $put_params;
     protected $priority = 0;
     protected $whens = [];
+    protected $transcendent = false;
+    protected $time;
+
+    protected $once = false;
+
+    /** @var Model $item */
+    protected $item = null;
 
     public function __construct($model_class) {
         $this->model_class = $model_class;
         $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));
+    }
+
+    public function once() {
+        $this->once = true;
+        $this->item = new $this->model_class;
+
+        return $this;
     }
 
     public function each($what) {
@@ -38,14 +54,61 @@ class ScheduleCreatorQueryBuilder
         return $this;
     }
 
+    /**
+     * @param $time
+     * @return $this
+     * @throws Exception
+     */
+    public function at($time) {
+        if($this->once) {
+            if(!($time instanceof Carbon))
+                throw new Exception("If you provide 'at' — starting time for event — that occurs once, please give a Carbon instance");
+
+            $this->time = clone $time;
+            $this->item->starts_at = $this->time;
+        } else {
+            $this->time = $time;
+            $this->rule->setTime($time);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     * @throws Exception
+     */
+    public function transcendent() {
+        if(!$this->rule)
+            throw new Exception("Only repeated actions can be transcendent");
+
+        $this->transcendent = true;
+
+        return $this;
+    }
+
+    /**
+     * @param $strategy
+     * @return $this
+     * @throws Exception
+     */
     public function repeat($strategy) {
+        if($this->once)
+            throw new Exception("But do I repeat or do it once?");
+
         $this->rule = new $strategy();
+
         if(!$this->rule instanceof RepetitionStrategy)
             throw new Exception("You probably forgot to inherit your strategy from RepetitionStrategy. Please, do it :)");
 
         return $this;
     }
 
+    /**
+     * @param $priority
+     * @return $this
+     * @throws Exception
+     */
     public function withPriority($priority) {
         $this->failWithoutRule()->priority = $priority;
 
@@ -64,21 +127,35 @@ class ScheduleCreatorQueryBuilder
         return $this;
     }
 
+    /**
+     * @param $from
+     * @return $this
+     * @throws Exception
+     */
     public function from($from) {
-        $this->failWithoutRule()->rule->setStartsAt($from);
+        if($this->once)
+            $this->item->starts_at = clone $from;
+        else
+            $this->failWithoutRule()->rule->setStartsAt(clone $from);
 
         return $this;
     }
 
+    /**
+     * @param $to
+     * @return $this
+     * @throws Exception
+     */
     public function to($to) {
-        $this->failWithoutRule()->rule->setEndsAt($to);
+        if($this->once)
+            $this->item->ends_at = clone $to;
+        else
+            $this->failWithoutRule()->rule->setEndsAt($to);
 
         return $this;
     }
 
     public function put($items_or_closure) {
-        $this->failWithoutRule();
-
         if(is_array($items_or_closure)) {
             $this->put_params = $items_or_closure;
         } else {
@@ -88,7 +165,38 @@ class ScheduleCreatorQueryBuilder
         return $this;
     }
 
+    /**
+     * @return array|bool
+     * @throws Exception
+     */
     public function save() {
+        if($this->once) {
+            return $this->saveAsOnce();
+        } else {
+            return $this->saveAsRepeated();
+        }
+    }
+
+    private function saveAsOnce() {
+        if($this->put_params)
+            $this->item->fill($this->put_params);
+
+        $this->item->repetition_id = null;
+
+        if($this->put_closure) {
+            $result = ($this->put_closure)($this->item);
+            $this->item->fill($result);
+        }
+
+        $this->item->save();
+        return $this->item;
+    }
+
+    /**
+     * @return bool
+     * @throws Exception
+     */
+    private function saveAsRepeated() {
         $this->failWithoutRule();
 
         $storage = new RepetitionStrategiesStorage();
@@ -96,10 +204,11 @@ class ScheduleCreatorQueryBuilder
         $storage->item_model = $this->model_class;
         $storage->put_params = $this->put_params;
         $storage->priority = $this->priority;
+        $storage->time = $this->time;
         $storage->params->core->whens = $this->whens;
 
         if($this->put_closure) {
-           $storage->put_closure = $this->serializer->serialize($this->put_closure);
+            $storage->put_closure = $this->serializer->serialize($this->put_closure);
         }
 
         $this->rule->save($storage);
@@ -107,6 +216,10 @@ class ScheduleCreatorQueryBuilder
         return $storage->save();
     }
 
+    /**
+     * @return $this
+     * @throws Exception
+     */
     private function failWithoutRule() {
         if(!$this->rule)
             throw new Exception("Wait, you have to set rule with 'repeat' or 'each' before doing that");

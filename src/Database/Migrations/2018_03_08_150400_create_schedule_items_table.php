@@ -16,7 +16,8 @@ class CreateScheduleItemsTable extends Migration
         Schema::create('schedule_items', function (Blueprint $table) {
             $table->increments('id');
             $table->dateTime("starts_at");
-            $table->dateTime("ends_at");
+            $table->dateTime("ends_at")->nullable();
+            $table->integer("user_id")->nullable();
             $table->integer("repetition_id")->nullable();
             $table->timestamps();
         });

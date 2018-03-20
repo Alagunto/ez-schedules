@@ -23,6 +23,7 @@ class RepetitionRulesTable extends Migration
             $table->longText("put_closure")->nullable();
             $table->dateTime("starts_at")->nullable();
             $table->dateTime("ends_at")->nullable();
+            $table->string("time");
             $table->timestamps();
         });
     }

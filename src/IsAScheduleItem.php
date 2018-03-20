@@ -15,7 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 trait IsAScheduleItem
 {
     public static function schedule() {
-        return new ScheduleCreatorQueryBuilder(self::class);
+        return new ScheduleCreatorQueryBuilder(static::class);
+    }
+
+    public static function occurs() {
+        return new ScheduleSingleItemCreatorQueryBuilder(static::class);
     }
 
     public function newEloquentBuilder($query)

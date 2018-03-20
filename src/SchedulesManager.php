@@ -23,6 +23,8 @@ class SchedulesManager
     public function resolveScheduleItemsForModel(string $class, $from, $to) {
         $resulting_items = [];
 
+//        dump(RepetitionStrategiesStorage::all());
+
         $storages = RepetitionStrategiesStorage::query()
             ->whereNested(function(Builder $query) use ($from, $to) {
                 $query->where("starts_at", "<=", $to)
@@ -47,7 +49,6 @@ class SchedulesManager
                 $item->save();
             }
         }
-
 
         return $resulting_items;
     }

@@ -24,6 +24,7 @@ class WeekdaysEacher
             return false;
 
         foreach($value as $item) {
+            $item = mb_strtolower($item);
             if(!in_array($item, self::weekdays()))
                 return false;
         }
@@ -46,13 +47,14 @@ class WeekdaysEacher
      * @param null $integer_to_days_map
      * @throws \Exception
      */
-    public function __construct($weekdays, $model) {
+    public function __construct($weekdays, $model, $time) {
         if(is_string($weekdays))
-            $this->weekdays = [$weekdays];
+            $this->weekdays = [mb_strtolower($weekdays)];
         else
             $this->weekdays = $weekdays;
         
         $this->model = $model;
+        $this->time = $time;
     }
 
     /**
@@ -67,14 +69,27 @@ class WeekdaysEacher
 
         while($current_day < $to) {
             $weekday = mb_strtolower($current_day->format('l'));
+
             if(in_array($weekday, $this->weekdays)) {
                 /** @var Model $model */
                 $model = new $this->model();
-                $model->starts_at = $weekday;
+                $model->starts_at = clone $current_day;
+
+                $time = Carbon::parse($this->time);
+
+                /** @var Carbon $model->starts_at */
+                $model->starts_at->hour($time->hour);
+                $model->starts_at->minute($time->minute);
+                $model->starts_at->second($time->second);
+
                 $generated_items[] = $model;
+
+                dump('buep', $current_day);
             }
+
+            $current_day->addDay();
         }
 
-        return [];
+        return $generated_items;
     }
 }
