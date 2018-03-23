@@ -83,8 +83,6 @@ class WeekdaysEacher
                 $model->starts_at->second($time->second);
 
                 $generated_items[] = $model;
-
-                dump('buep', $current_day);
             }
 
             $current_day->addDay();

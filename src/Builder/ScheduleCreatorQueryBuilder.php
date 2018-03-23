@@ -67,6 +67,7 @@ class ScheduleCreatorQueryBuilder
             $this->time = clone $time;
             $this->item->starts_at = $this->time;
         } else {
+            $this->failWithoutRule();
             $this->time = $time;
             $this->rule->setTime($time);
         }

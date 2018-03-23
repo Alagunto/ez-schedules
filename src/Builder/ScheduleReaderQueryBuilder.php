@@ -10,22 +10,54 @@ namespace Alagunto\EzSchedules\Builder;
 
 use Alagunto\EzSchedules\SchedulesManager;
 use Alagunto\EzSchedules\Test\ScheduleItem;
+use Carbon\Carbon;
 
 class ScheduleReaderQueryBuilder extends \Illuminate\Database\Eloquent\Builder
 {
     protected $from = null;
     protected $to = null;
 
+    /**
+     * @param string|Carbon $from
+     * @return $this
+     * @throws \Exception
+     */
     public function from($from) {
+        if(is_string($from))
+            $from = Carbon::parse($from);
+
+        if(!($from instanceof Carbon))
+            throw new \Exception("Cannot parse the 'from' argument");
+
         $this->from = $from;
+        return $this;
+    }
+
+    /**
+     * @param string|Carbon $to
+     * @return $this
+     * @throws \Exception
+     */
+    public function to($to) {
+        if(is_string($to))
+            $to = Carbon::parse($to);
+
+        if(!($to instanceof Carbon))
+            throw new \Exception("Cannot parse the 'to' argument");
+
+
+        $this->to = $to;
 
         return $this;
     }
 
-    public function to($to) {
-        $this->to = $to;
+    /**
+     * @throws \Exception
+     */
+    public function render() {
+        $this->resolveItems();
 
-        return $this;
+        return true;
     }
 
     /**
@@ -34,6 +66,8 @@ class ScheduleReaderQueryBuilder extends \Illuminate\Database\Eloquent\Builder
      * @throws \Exception
      */
     public function get($columns = ['*']) {
+        if(!($this->from && $this->to))
+            throw new \Exception("Please, specify from and to. Otherwise, any repetition will cause infinite items generation =)");
         $this->resolveItems();
         return parent::get($columns);
     }

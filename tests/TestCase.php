@@ -3,6 +3,7 @@
 namespace Alagunto\EzSchedules\Test;
 
 use Alagunto\EzSchedules\SchedulesProvider;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class TestCase extends \Orchestra\Testbench\TestCase
@@ -40,6 +41,7 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         $this->loadLaravelMigrations();
         $this->artisan("migrate");
+        Carbon::setTestNow(Carbon::parse("first Monday of January 1990"));
         DB::beginTransaction();
     }
 

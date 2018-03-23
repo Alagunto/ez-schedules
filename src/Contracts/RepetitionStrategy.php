@@ -14,12 +14,13 @@ use Illuminate\Database\Eloquent\Model;
 
 abstract class RepetitionStrategy
 {
-    protected $schedule_items_model;
+    public $schedule_items_model;
 
     /** @var Carbon $starts_at */
-    protected $starts_at = null;
-    protected $ends_at = null;
-    protected $time;
+    public $starts_at = null;
+    /** @var Carbon $ends_at */
+    public $ends_at = null;
+    public $time;
 
     public function __construct() {
         $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));

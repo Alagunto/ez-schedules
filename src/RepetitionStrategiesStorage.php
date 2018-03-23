@@ -25,6 +25,11 @@ class RepetitionStrategiesStorage extends Proxy
         "put_params" => "json"
     ];
 
+    protected $dates = [
+        "starts_at",
+        "ends_at"
+    ];
+
     protected $json_containers = [
         "params" => RepetitionStrategiesStorageParamsContainer::class
     ];
