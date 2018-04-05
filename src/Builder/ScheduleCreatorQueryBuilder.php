@@ -134,6 +134,12 @@ class ScheduleCreatorQueryBuilder
      * @throws Exception
      */
     public function from($from) {
+        if(is_string($from))
+            $from = Carbon::parse($from);
+
+        if(!($from instanceof Carbon))
+            throw new Exception("Cannot parse 'from' argument");
+
         if($this->once)
             $this->item->starts_at = clone $from;
         else
@@ -148,6 +154,12 @@ class ScheduleCreatorQueryBuilder
      * @throws Exception
      */
     public function to($to) {
+        if(is_string($to))
+            $to = Carbon::parse($to);
+
+        if(!($to instanceof Carbon))
+            throw new Exception("Cannot parse 'to' argument");
+
         if($this->once)
             $this->item->ends_at = clone $to;
         else

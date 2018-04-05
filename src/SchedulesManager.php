@@ -21,10 +21,6 @@ class SchedulesManager
      * @throws \Exception
      */
     public function resolveScheduleItemsForModel(string $class, $from, $to) {
-        $resulting_items = [];
-
-//        dump(RepetitionStrategiesStorage::all());
-
         $storages = RepetitionStrategiesStorage::query()
             ->whereNested(function(Builder $query) use ($from, $to) {
                 $query->where("starts_at", "<=", $to)
@@ -38,6 +34,8 @@ class SchedulesManager
             ->orderBy("priority")
             ->get();
 
+        $packs = [];
+
         foreach($storages as $storage) {
             /** @var RepetitionStrategy $repetition_strategy */
             $repeater = new RepeatedItemsGenerator($storage);
@@ -46,7 +44,18 @@ class SchedulesManager
             /** @var Model $item */
             foreach($generated_items as $item) {
                 $item->repetition_id = $storage->id;
+            }
+
+            $items_packer = new RepeatedItemsPacker($storage, $generated_items);
+            $packs = $items_packer->packWith($packs);
+        }
+
+        $resulting_items = [];
+
+        foreach($packs as $pack) {
+            foreach($pack["items"] as $item) {
                 $item->save();
+                $resulting_items[] = $item;
             }
         }
 

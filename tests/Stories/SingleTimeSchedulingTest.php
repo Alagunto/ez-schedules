@@ -32,8 +32,8 @@ class SingleTimeSchedulingTest extends TestCase
      */
     public function test_one_repetition_gives_info_about_it() {
         ScheduleItem::schedule()->each("Monday")
-            ->from(Carbon::now())
-            ->to(Carbon::tomorrow())
+            ->from("now")
+            ->to("tomorrow")
             ->put([
                 "user_id" => 2
             ])
@@ -57,6 +57,5 @@ class SingleTimeSchedulingTest extends TestCase
         $this->assertEquals(ScheduleItem::class, $repetition->getScheduleItemClassname());
 
         $this->assertEquals(EacherRepetitionStrategy::class, $repetition->getRepetitionStrategyClassname());
-
     }
 }
