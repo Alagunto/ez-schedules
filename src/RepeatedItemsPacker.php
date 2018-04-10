@@ -23,7 +23,7 @@ class RepeatedItemsPacker
     public function packWith($packs) {
         foreach($this->items as $item) {
             // Transcendent items are just left as they are
-            if($this->storage->params->core["transcendent"])
+            if($this->storage->params->core["transcendent"] ?? false)
                 continue;
 
             foreach($packs as $pack) {

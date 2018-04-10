@@ -66,7 +66,7 @@ class ScheduleReaderQueryBuilder extends \Illuminate\Database\Eloquent\Builder
      * @throws \Exception
      */
     public function get($columns = ['*']) {
-        if(!($this->from && $this->to))
+        if(is_null($this->from) || is_null($this->to))
             throw new \Exception("Please, specify from and to. Otherwise, any repetition will cause infinite items generation =)");
         $this->resolveItems();
         return parent::get($columns);

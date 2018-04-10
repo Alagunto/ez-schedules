@@ -4,6 +4,7 @@ namespace Alagunto\EzSchedules;
 use Alagunto\EzSchedules\Contracts\RepetitionStrategy;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use ReflectionFunction;
 
 /**
@@ -31,6 +32,27 @@ class RepeatedItemsGenerator
         $strategy->restoreFromStorage($this->storage);
 
         $generated_items = collect($strategy->provide($from, $to));
+
+        $model = $this->storage->item_model;
+
+        /** @var Collection $already_existing_items */
+        $already_existing_items = $model::raw()->where('starts_at', '>=', $from)->where('starts_at', '<=', $to)->get();
+
+        $duplicates = collect([]);
+
+        // Ensuring we don't re-create those items that exist
+        $generated_items = $generated_items->filter(function($item) use ($already_existing_items, $duplicates) {
+            $duplicate = $already_existing_items->where("starts_at", $item->starts_at)
+                ->where("repetition_id", $this->storage->id)
+                ->first();
+
+            if(!is_null($duplicate)) {
+                $duplicates->push($duplicate);
+                return false;
+            }
+
+            return true;
+        });
 
         // Filter each generated item with whens
         foreach($this->storage->params->core["whens"] ?? [] as $when) {
@@ -75,6 +97,6 @@ class RepeatedItemsGenerator
             });
         }
 
-        return $generated_items;
+        return $generated_items->merge($duplicates);
     }
 }

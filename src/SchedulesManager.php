@@ -54,6 +54,7 @@ class SchedulesManager
 
         foreach($packs as $pack) {
             foreach($pack["items"] as $item) {
+                /** @var IsAScheduleItem $item */
                 $item->save();
                 $resulting_items[] = $item;
             }
