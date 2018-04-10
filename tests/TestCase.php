@@ -49,4 +49,16 @@ class TestCase extends \Orchestra\Testbench\TestCase
         DB::rollback();
         parent::tearDown();
     }
+
+    public function times($n, $do) {
+        $result = [];
+        for($_ = 0; $_ < $n; $_++)
+            $result[] = $do();
+
+        return $result;
+    }
+
+    public function twice($do) {
+        return $this->times(2, $do);
+    }
 }

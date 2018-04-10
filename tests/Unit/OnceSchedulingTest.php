@@ -29,7 +29,6 @@ class OnceSchedulingTest extends TestCase
         /** @var ScheduleItem $item */
         $item = $items->first();
 
-        dump($item->toArray());
         $this->assertTrue(Carbon::parse($item->starts_at)->equalTo(Carbon::now()));
     }
 }

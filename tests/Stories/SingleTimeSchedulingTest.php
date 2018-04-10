@@ -14,7 +14,7 @@ class SingleTimeSchedulingTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function test_i_can_schedule_some_class_for_one_time() {
+    public function test_i_can_schedule_some_class() {
         ScheduleItem::schedule()
             ->each("Monday")
             ->put(function() {
@@ -24,7 +24,31 @@ class SingleTimeSchedulingTest extends TestCase
             })->at("11:00")->save();
 
 
-        ScheduleItem::from(Carbon::now())->to(Carbon::now()->addYear())->get()->toArray();
+        $items = ScheduleItem::from(Carbon::now())->to(Carbon::now()->addWeek())->get();
+
+        $this->assertCount(1, $items);
+        $this->assertTrue(Carbon::parse($items[0]->starts_at)->isMonday());
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function test_repeated_items_do_not_get_duplicated() {
+        ScheduleItem::schedule()
+            ->each("Monday")
+            ->put(function() {
+                return [
+                    "user_id" => 13
+                ];
+            })->at("11:00")->save();
+
+        $this->twice(function() {
+            ScheduleItem::from(Carbon::now())->to(Carbon::now()->addWeek())->get();
+        });
+
+        $items = ScheduleItem::from(Carbon::now())->to(Carbon::now()->addWeek())->get();
+
+        $this->assertCount(1, $items);
     }
 
     /**

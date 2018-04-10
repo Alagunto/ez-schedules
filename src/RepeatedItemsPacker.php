@@ -28,7 +28,7 @@ class RepeatedItemsPacker
 
             foreach($packs as $pack) {
                 // We do not dare to touch transcendent ones
-                if($pack["storage"]->params->core["transcendent"])
+                if($pack["storage"]->params->core["transcendent"] ?? false)
                     continue;
 
                 foreach($pack["items"] as $potential_collider) {
@@ -52,8 +52,12 @@ class RepeatedItemsPacker
         return $packs;
     }
 
-    private function collides(IsAScheduleItem $a, IsAScheduleItem $b){
-        return (min($a->ends_at, $b->ends_at) - max($a->starts_at, $b->starts_at)) > 0;
+    private function collides($a, $b){
+        return (
+            min($a->ends_at ?? $a->starts_at, $b->ends_at ?? $b->starts_at)->greaterThan(
+                max($a->starts_at, $b->starts_at)
+            )
+        );
     }
 
     private function battle($me, $him, $my_power, $his_power) {
