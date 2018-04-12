@@ -37,6 +37,6 @@ class RepetitionRulesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('schedule_items');
+        Schema::dropIfExists('repetition_rules');
     }
 }
