@@ -13,6 +13,7 @@ class RepetitionRulesTable extends Migration
      */
     public function up()
     {
+        if(!Schema::hasTable('repetition_rules'))
         Schema::create('repetition_rules', function (Blueprint $table) {
             $table->increments('id');
             $table->text("repetition_strategy");

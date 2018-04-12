@@ -38,9 +38,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
         if(!file_exists(__DIR__ . "/../test.db"))
             touch(__DIR__ . "/../test.db");
 
-
-        $this->loadLaravelMigrations();
+        $this->loadMigrationsFrom(__DIR__ . "/../src/Database/Migrations");
         $this->artisan("migrate");
+
         Carbon::setTestNow(Carbon::parse("first Monday of January 1990"));
         DB::beginTransaction();
     }

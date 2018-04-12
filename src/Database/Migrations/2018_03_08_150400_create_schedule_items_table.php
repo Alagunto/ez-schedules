@@ -13,6 +13,7 @@ class CreateScheduleItemsTable extends Migration
      */
     public function up()
     {
+        if(!Schema::hasTable('schedule_items'))
         Schema::create('schedule_items', function (Blueprint $table) {
             $table->increments('id');
             $table->dateTime("starts_at");
