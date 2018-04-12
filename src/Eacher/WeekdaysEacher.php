@@ -47,7 +47,7 @@ class WeekdaysEacher
      * @param null $integer_to_days_map
      * @throws \Exception
      */
-    public function __construct($weekdays, $model, $time) {
+    public function __construct($weekdays, $model, $time, $to) {
         if(is_string($weekdays))
             $this->weekdays = [mb_strtolower($weekdays)];
         else
@@ -55,6 +55,7 @@ class WeekdaysEacher
         
         $this->model = $model;
         $this->time = $time;
+        $this->time_to = $to;
     }
 
     /**
@@ -81,6 +82,15 @@ class WeekdaysEacher
                 $model->starts_at->hour($time->hour);
                 $model->starts_at->minute($time->minute);
                 $model->starts_at->second($time->second);
+
+                $model->ends_at = clone $current_day;
+
+                $time_to = Carbon::parse($this->time_to);
+
+                /** @var Carbon $model->starts_at */
+                $model->ends_at->hour($time_to->hour);
+                $model->ends_at->minute($time_to->minute);
+                $model->ends_at->second($time_to->second);
 
                 $generated_items[] = $model;
             }

@@ -17,6 +17,7 @@ class SingleTimeSchedulingTest extends TestCase
     public function test_i_can_schedule_some_class() {
         ScheduleItem::schedule()
             ->each("Monday")
+            ->from("now")
             ->put(function() {
                 return [
                     "user_id" => 13
@@ -36,6 +37,7 @@ class SingleTimeSchedulingTest extends TestCase
     public function test_repeated_items_do_not_get_duplicated() {
         ScheduleItem::schedule()
             ->each("Monday")
+            ->from("now")
             ->put(function() {
                 return [
                     "user_id" => 13
@@ -82,4 +84,36 @@ class SingleTimeSchedulingTest extends TestCase
 
         $this->assertEquals(EacherRepetitionStrategy::class, $repetition->getRepetitionStrategyClassname());
     }
+
+    /**
+     * @throws \Exception
+     */
+    public function test_we_can_remove_rule_and_delete_futures() {
+        ScheduleItem::schedule()
+            ->each("Tuesday")
+            ->from("now")
+            ->at("11:00")
+            ->endsAt("13:00")
+            ->put([
+                "user_id" => 0
+            ])
+            ->save();
+
+        /** @var ScheduledRepetition $repetition */
+        $repetition = ScheduleItem::repetitions()->first();
+
+        $this->assertCount(2, ScheduleItem::from("now")->to(
+            Carbon::now()->addWeeks(2))->get()
+        );
+
+        $repetition->cancel(Carbon::now()->addWeek(), "delete_futures");
+
+        $items = ScheduleItem::from("now")->to(
+            Carbon::now()->addWeeks(2)
+        )->get();
+
+        $this->assertTrue(Carbon::parse($items[0]->starts_at)->lessThan(Carbon::now()->addWeek()));
+        $this->assertCount(1, $items);
+    }
+
 }

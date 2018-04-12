@@ -28,7 +28,7 @@ class EacherRepetitionStrategy extends RepetitionStrategy
      */
     public function provide($from, $to) {
         if(WeekdaysEacher::suitable($this->each_what))
-            return (new WeekdaysEacher($this->each_what, $this->schedule_items_model, $this->time))->provide($from, $to);
+            return (new WeekdaysEacher($this->each_what, $this->schedule_items_model, $this->time, $this->time_to))->provide($from, $to);
 
         throw new \Exception("No suitable eacher was found for your values");
     }

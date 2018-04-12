@@ -24,6 +24,7 @@ class RepetitionRulesTable extends Migration
             $table->dateTime("starts_at")->nullable();
             $table->dateTime("ends_at")->nullable();
             $table->string("time");
+            $table->string("time_to")->nullable();
             $table->timestamps();
         });
     }

@@ -29,15 +29,30 @@ class ScheduleCreatorQueryBuilder
     protected $whens = [];
     protected $transcendent = false;
     protected $time;
+    protected $time_to;
+    protected $colliders = [];
 
     protected $once = false;
 
     /** @var Model $item */
     protected $item = null;
 
+    /**
+     * ScheduleCreatorQueryBuilder constructor.
+     * @param $model_class
+     * @throws Exception
+     */
     public function __construct($model_class) {
         $this->model_class = $model_class;
         $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));
+    }
+
+    public function collideBy($colliders) {
+        $this->colliders = $colliders;
+
+        return $this;
+
+        // TODO: check those colliders to give instant errors
     }
 
     public function once() {
@@ -61,8 +76,10 @@ class ScheduleCreatorQueryBuilder
      */
     public function at($time) {
         if($this->once) {
+            if(is_string($time))
+                $time = Carbon::parse($time);
             if(!($time instanceof Carbon))
-                throw new Exception("If you provide 'at' — starting time for event — that occurs once, please give a Carbon instance");
+                throw new Exception("Cannot parse that time, buddy");
 
             $this->time = clone $time;
             $this->item->starts_at = $this->time;
@@ -71,6 +88,12 @@ class ScheduleCreatorQueryBuilder
             $this->time = $time;
             $this->rule->setTime($time);
         }
+
+        return $this;
+    }
+
+    public function endsAt($time) {
+        $this->time_to = $time;
 
         return $this;
     }
@@ -218,7 +241,9 @@ class ScheduleCreatorQueryBuilder
         $storage->put_params = $this->put_params;
         $storage->priority = $this->priority;
         $storage->time = $this->time;
+        $storage->time_to = $this->time_to;
         $storage->params->core->whens = $this->whens;
+        $storage->params->core->colliders = $this->colliders;
 
         if($this->put_closure) {
             $storage->put_closure = $this->serializer->serialize($this->put_closure);

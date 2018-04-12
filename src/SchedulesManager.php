@@ -9,6 +9,7 @@
 namespace Alagunto\EzSchedules;
 
 use Alagunto\EzSchedules\Contracts\RepetitionStrategy;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
 
@@ -39,7 +40,21 @@ class SchedulesManager
         foreach($storages as $storage) {
             /** @var RepetitionStrategy $repetition_strategy */
             $repeater = new RepeatedItemsGenerator($storage);
-            $generated_items = $repeater->generate($from, $to);
+
+
+            $storage_generation_starts_at = Carbon::parse($storage->starts_at);
+            $generate_from = clone $from;
+            if($storage_generation_starts_at->greaterThan($generate_from))
+                $generate_from = clone $storage_generation_starts_at;
+
+            $generate_to = clone $to;
+            if(!is_null($storage->ends_at)) {
+                $storage_generation_ends_at = Carbon::parse($storage->ends_at);
+                if ($storage_generation_ends_at->lessThan($generate_to))
+                    $generate_to = clone $storage_generation_ends_at;
+            }
+
+            $generated_items = $repeater->generate($generate_from, $generate_to);
 
             /** @var Model $item */
             foreach($generated_items as $item) {

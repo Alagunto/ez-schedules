@@ -21,6 +21,7 @@ abstract class RepetitionStrategy
     /** @var Carbon $ends_at */
     public $ends_at = null;
     public $time;
+    public $time_to;
 
     public function __construct() {
         $this->serializer = new \SuperClosure\Serializer(null, config("app.key"));
@@ -46,6 +47,8 @@ abstract class RepetitionStrategy
     }
 
     public function save(RepetitionStrategiesStorage $storage) {
+        if(is_null($this->starts_at))
+            throw new \InvalidArgumentException("Please provide 'from' -- when the repetition starts");
         $storage->starts_at = $this->starts_at;
         $storage->ends_at = $this->ends_at;
     }
@@ -54,10 +57,15 @@ abstract class RepetitionStrategy
         $this->time = $time;
     }
 
+    public function setTimeTo($time) {
+        $this->time_to = $time;
+    }
+
     public function restoreFromStorage(RepetitionStrategiesStorage $storage) {
         $this->time = $storage->time;
-        $this->starts_at = $storage->starts_at;
+        $this->time_to = $storage->time_to;
 
+        $this->starts_at = $storage->starts_at;
         $this->ends_at = $storage->ends_at;
         $this->schedule_items_model = $storage->item_model;
     }
